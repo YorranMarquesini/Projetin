@@ -3,7 +3,16 @@ package com.projeto.entidades;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
+import com.projeto.main.Jogo;
+import com.projeto.world.Camera;
+
 public class entidades {
+	
+	public static BufferedImage FISH_EN = Jogo.spritesheet.getSprite(5*64, 0, 64, 64);
+	public static BufferedImage TUBAS_EN = Jogo.spritesheet.getSprite(5*64, 64, 64, 64);
+	public static BufferedImage JELLY_EN = Jogo.spritesheet.getSprite(5*64, 128, 64, 64);
+	
+	
 	protected double x;
 	protected double y;
 	protected int altura;
@@ -42,6 +51,6 @@ public class entidades {
 		
 	}
 	public void render(Graphics g) {
-		g.drawImage(sprite, this.GetX(), this.GetY(), null);
+		g.drawImage(sprite, this.GetX() - Camera.x , this.GetY() - Camera.y, null);
 	}
 }
