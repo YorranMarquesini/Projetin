@@ -4,6 +4,8 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
 import com.projeto.main.Jogo;
+import com.projeto.world.Camera;
+import com.projeto.world.world;
 
 public class Player extends entidades {
 
@@ -72,18 +74,21 @@ public class Player extends entidades {
 				}
 			}
 		}
+		
+		Camera.x = Camera.clamp(this.GetX() - (Jogo.altura/2), 0,world.altura*64 - Jogo.altura);
+		Camera.y = Camera.clamp(this.GetY() - (Jogo.largura/2), 0,world.largura*64 - Jogo.largura);
 	}
 	
 	public void render(Graphics g) {
 		if(dir == right_dir) {
-			g.drawImage(rightPlayer[index], this.GetX(), this.GetY(),null);
+			g.drawImage(rightPlayer[index], this.GetX() - Camera.x, this.GetY() - Camera.y,null);
 		}else if(dir == left_dir) {
-			g.drawImage(leftPlayer[index], this.GetX(), this.GetY(),null);
+			g.drawImage(leftPlayer[index], this.GetX() - Camera.x, this.GetY() - Camera.y,null);
 		}
 		if(dir == up_dir) {
-			g.drawImage(upPlayer[index], this.GetX(), this.GetY(),null);
+			g.drawImage(upPlayer[index], this.GetX()- Camera.x, this.GetY()- Camera.y,null);
 		}else if(dir == down_dir) {
-			g.drawImage(downPlayer[index], this.GetX(), this.GetY(),null);
+			g.drawImage(downPlayer[index], this.GetX()- Camera.x, this.GetY()- Camera.y,null);
 		}
 	}
 	
