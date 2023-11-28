@@ -1,0 +1,77 @@
+package com.projeto.world;
+
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
+import com.projeto.entidades.Enemy;
+import com.projeto.entidades.entidades;
+import com.projeto.main.Jogo;
+
+public class world {
+	
+	private Tile[] tiles;
+	public static int altura, largura; 
+	
+	public world(String path) {
+		File file = new File("C:\\Users\\Cliente\\eclipse-workspace\\ProjetoJardel\\res\\map.png");
+		try {
+			BufferedImage map = ImageIO.read(file);
+			int[] pixels = new int[map.getWidth()* map.getHeight()];
+			altura = map.getHeight();
+			largura = map.getWidth();
+			tiles = new Tile[map.getWidth()* map.getHeight()];
+			map.getRGB(0, 0, map.getWidth(), map.getHeight(), pixels, 0, map.getWidth());
+			for(int xx = 0; xx < map.getWidth(); xx++) {
+				for(int yy = 0; yy< map.getHeight(); yy++) {
+					int pixelAtual = pixels[xx + (yy * map.getWidth())];
+					tiles[xx + (yy*largura)] = new FloorTile(xx*128,yy*128,Tile.TILE_FLOOR);
+					
+					if(pixelAtual == 0xFF000000) {
+						//CHÃO
+						tiles[xx + (yy*largura)] = new FloorTile(xx*128,yy*128,Tile.TILE_FLOOR);
+						
+					}else if(pixelAtual == 0xFF55FF38) {
+						//ARVORE 1
+						tiles[xx + (yy*largura)] = new TreeTile(xx*128,yy*128,Tile.TILE_TREE);
+					}else if(pixelAtual == 0xFF558938) {
+						//ARVORE 2
+						tiles[xx + (yy*largura)] = new STreeTile(xx*128,yy*128,Tile.TILE_STREE);
+						
+					}else if(pixelAtual == 0xFFFF0000) {
+						//player
+						Jogo.player.setX(xx*64);
+						Jogo.player.setY(yy*64);
+					}else if(pixelAtual == 0xFFFFFF00) {
+						//BIXO PEIXE
+						Jogo.entities.add(new Enemy(xx*64,yy*64,64,64,entidades.FISH_EN));
+					}//Para adicionar itens tem que criar a classe a cor no mapa e tudo igual os inimigos
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void render(Graphics g) {
+		
+		int xstart = Camera.x / 128;
+		int ystart = Camera.y / 128;
+		
+		int xfinal = xstart + (Jogo.largura / 128)+ 2;
+		int yfinal = ystart + (Jogo.altura / 128) + 2;
+		
+		for(int xx = xstart; xx <= xfinal; xx++) {
+			for(int yy = ystart; yy <= yfinal; yy++) {
+				if(xx < 0 || yy < 0 || xx >= largura || yy >= altura) {
+					continue;
+				}
+				Tile tile = tiles[xx + (yy*largura)];
+				tile.render(g);
+			}
+		}
+	}
+}
