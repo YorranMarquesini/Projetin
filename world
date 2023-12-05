@@ -8,16 +8,24 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import com.projeto.entidades.Enemy;
+import com.projeto.entidades.Item;
+import com.projeto.entidades.Item2;
+import com.projeto.entidades.Item3;
+import com.projeto.entidades.Item4;
+import com.projeto.entidades.Life;
+import com.projeto.entidades.Npc;
 import com.projeto.entidades.entidades;
 import com.projeto.main.Jogo;
 
 public class world {
 	
-	private Tile[] tiles;
-	public static int altura, largura; 
+	private static Tile[] tiles;
+	public static int altura, largura;
+	public static final int TILE_SIZE = 128;
+	private static int colisionReduction = 28;
 	
 	public world(String path) {
-		File file = new File("C:\\Users\\Cliente\\eclipse-workspace\\ProjetoJardel\\res\\map.png");
+		File file = new File("C:\\Users\\Cliente\\eclipse-workspace\\ProjetoJardel\\res\\map_3.png");
 		try {
 			BufferedImage map = ImageIO.read(file);
 			int[] pixels = new int[map.getWidth()* map.getHeight()];
@@ -26,7 +34,7 @@ public class world {
 			tiles = new Tile[map.getWidth()* map.getHeight()];
 			map.getRGB(0, 0, map.getWidth(), map.getHeight(), pixels, 0, map.getWidth());
 			for(int xx = 0; xx < map.getWidth(); xx++) {
-				for(int yy = 0; yy< map.getHeight(); yy++) {
+				for(int yy = 0; yy < map.getHeight(); yy++) {
 					int pixelAtual = pixels[xx + (yy * map.getWidth())];
 					tiles[xx + (yy*largura)] = new FloorTile(xx*128,yy*128,Tile.TILE_FLOOR);
 					
@@ -34,10 +42,11 @@ public class world {
 						//CHÃO
 						tiles[xx + (yy*largura)] = new FloorTile(xx*128,yy*128,Tile.TILE_FLOOR);
 						
-					}else if(pixelAtual == 0xFF55FF38) {
+					}if(pixelAtual == 0xFF55FF38) {
 						//ARVORE 1
+						tiles[xx + (yy*largura)] = new FloorTile(xx*128,yy*128,Tile.TILE_FLOOR);
 						tiles[xx + (yy*largura)] = new TreeTile(xx*128,yy*128,Tile.TILE_TREE);
-					}else if(pixelAtual == 0xFF558938) {
+					}if(pixelAtual == 0xFF558938) {
 						//ARVORE 2
 						tiles[xx + (yy*largura)] = new STreeTile(xx*128,yy*128,Tile.TILE_STREE);
 						
@@ -47,14 +56,62 @@ public class world {
 						Jogo.player.setY(yy*64);
 					}else if(pixelAtual == 0xFFFFFF00) {
 						//BIXO PEIXE
-						Jogo.entities.add(new Enemy(xx*64,yy*64,64,64,entidades.FISH_EN));
-					}//Para adicionar itens tem que criar a classe a cor no mapa e tudo igual os inimigos
+						BufferedImage[] buf = new BufferedImage[4];
+						buf[0] = Jogo.spritesheet.getSprite(5*64, 128, 64, 64);
+						buf[1] = Jogo.spritesheet.getSprite(6*64, 128, 64, 64);
+						buf[2] = Jogo.spritesheet.getSprite(7*64, 128, 64, 64);
+						buf[3] = Jogo.spritesheet.getSprite(8*64, 128, 64, 64);
+						Enemy en = new Enemy(xx*128,yy*128,64,64,buf);
+						Jogo.entities.add(en);
+						Jogo.enemies.add(en);
+					}else if(pixelAtual == 0xFF0000FF){
+						Jogo.entities.add(new Life(xx*128, yy*128,32,32,entidades.Life_EN));
+					}else if(pixelAtual == 0xFFFF006E) {
+						Jogo.entities.add(new Npc(xx*128, yy*128,64,64,entidades.Npc_EN));
+					}else if(pixelAtual == 0XFF00FFFF) {
+						Jogo.entities.add(new Item(xx*128, yy*128,32,32,entidades.Item_EN));
+					}else if(pixelAtual == 0XFFFFFFFF) {
+						Jogo.entities.add(new Item2(xx*128, yy*128,32,32,entidades.Item2_EN));
+					}
+					else if(pixelAtual == 0XFFFF6A20) {
+						Jogo.entities.add(new Item3(xx*128, yy*128,32,32,entidades.Item3_EN));
+					}else if(pixelAtual == 0XFF70C19C) {
+						Jogo.entities.add(new Item4(xx*128, yy*128,32,32,entidades.Item4_EN));
+					}
+					//Para adicionar itens tem que criar a classe a cor no mapa e tudo igual os inimigos
 				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	public static boolean isFree(int xnext,int ynext) {
+		int x1 = (xnext + colisionReduction) / TILE_SIZE;
+		int y1 = (ynext + colisionReduction) / TILE_SIZE;
+		
+		int x2 = (xnext+TILE_SIZE - colisionReduction) / TILE_SIZE;
+		int y2 = (ynext + colisionReduction)  / TILE_SIZE;
+		
+		int x3 = (xnext + colisionReduction) / TILE_SIZE;
+		int y3 = (ynext+TILE_SIZE - colisionReduction) / TILE_SIZE;
+		
+		int x4 = (xnext+TILE_SIZE - colisionReduction) / TILE_SIZE;
+		int y4 = (ynext+TILE_SIZE - colisionReduction) / TILE_SIZE;
+		
+		return !((tiles[x1+(y1*world.largura)] instanceof TreeTile)||
+				(tiles[x1+(y1*world.largura)] instanceof STreeTile)||
+				(tiles[x2+(y2*world.largura)] instanceof TreeTile)||
+				(tiles[x2+(y2*world.largura)] instanceof STreeTile)||
+				(tiles[x3+(y3*world.largura)] instanceof TreeTile)||
+				(tiles[x3+(y3*world.largura)] instanceof STreeTile)||
+				(tiles[x4+(y4*world.largura)] instanceof STreeTile)||
+				(tiles[x4+(y4*world.largura)] instanceof TreeTile));
+		
+		
+	}
+
 	
 	public void render(Graphics g) {
 		
