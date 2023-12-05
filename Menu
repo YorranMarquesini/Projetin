@@ -1,0 +1,63 @@
+package com.projeto.main;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+
+public class Menu {
+	
+	public String[] options = {"novo jogo","sair"};
+	
+	public int CurrentOption = 0;
+	public int maxOption = options.length - 1;
+	
+	public boolean up,down,enter;
+	
+	public void tick() {
+		if(up) {
+			up = false;
+			CurrentOption --;
+			if(CurrentOption < 0) {
+				CurrentOption = maxOption;
+			}
+		}
+		if(down) {
+			down = false;
+			CurrentOption ++;
+			if(CurrentOption > maxOption) {
+				CurrentOption = 0;
+			}
+		}
+		if(enter) {
+			enter = false;
+			if(options[CurrentOption] == "novo jogo") {
+				Jogo.gameState = "NORMAL";
+			}
+			if(options[CurrentOption] == "sair") {
+				System.exit(0);
+			}
+		}
+		
+	}
+	
+	public void render(Graphics g) {
+		g.setColor(Color.black);
+		g.fillRect(0, 0, Jogo.altura*Jogo.scala, Jogo.largura*Jogo.scala);
+		g.setColor(Color.RED);
+		g.setFont(new Font ("arial", Font.BOLD,50));
+		g.drawString(">LORD OF THE ABYSS<", (Jogo.altura*Jogo.scala)/ 2 - 300 ,(Jogo.largura*Jogo.scala) / 2 - 300);
+		
+		//Opcoes menu
+		g.setColor(Color.WHITE);
+		g.setFont(new Font ("arial", Font.BOLD,30));
+		g.drawString("Novo Jogo", (Jogo.altura*Jogo.scala)/ 2 - 110 , 300);
+		g.drawString("Sair", (Jogo.altura*Jogo.scala)/ 2 - 65 , 360);
+		
+		if(options[CurrentOption] == "novo jogo") {
+			g.drawString(">", (Jogo.altura*Jogo.scala)/ 2 - 150 , 300);
+		}if(options[CurrentOption] == "sair") {
+			g.drawString(">", (Jogo.altura*Jogo.scala)/ 2 - 105 , 360);
+		}
+	}
+
+}
