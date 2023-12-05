@@ -1,12 +1,151 @@
 package com.projeto.entidades;
 
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
+import com.projeto.main.Jogo;
+import com.projeto.world.Camera;
+import com.projeto.world.world;
+
 public class Enemy extends entidades {
-
-	public Enemy(int x, int y, int altura, int largura, BufferedImage sprite) {
-		super(x, y, altura, largura, sprite);
-
+	
+	private double speed = 1;
+	
+	private int maskx = 64,masky = 64, maskw = 64, maskh = 64;
+	
+	public int frames = 0,maxFrames = 20,index = 0,maxIndex = 3;
+	private boolean moved = false;
+	private BufferedImage[] sprites;
+	
+	public int life = 10;
+	public static int lifeControl,maxlife;
+	
+	public Enemy(int x, int y, int altura, int largura, BufferedImage[] buf) {
+		super(x, y, altura, largura, null);
+		sprites = new BufferedImage[4];
+		sprites[0] = Jogo.spritesheet.getSprite(5*64, 128, 64, 64);
+		sprites[1] = Jogo.spritesheet.getSprite(6*64, 128, 64, 64);
+		sprites[2] = Jogo.spritesheet.getSprite(7*64, 128, 64, 64);
+		sprites[3] = Jogo.spritesheet.getSprite(8*64, 128, 64, 64);
 	}
-
+	
+	
+	public void tick() {
+		maskx = 64;
+		masky = 64; 
+		maskw = 64; 
+		maskh = 64;
+		if (isColiddingWithPlay() == false) {
+		if((int)x < Jogo.player.GetX() && world.isFree((int)(x+speed), this.GetY())
+				&& !isColidding((int)(x+speed), this.GetY())) {
+			x+=speed;
+			moved = true;
+		}else if((int)x > Jogo.player.GetX() && world.isFree((int)(x-speed), this.GetY())
+				&& !isColidding((int)(x-speed), this.GetY())) {
+			x-=speed;
+			moved = true;
+		}if ((int)y < Jogo.player.GetY() && world.isFree(this.GetX(), (int)(y+speed))
+				&& !isColidding(this.GetX(), (int)(y+speed))) {
+			y+=speed;
+			moved = true;
+		}else if ((int)y > Jogo.player.GetY() && world.isFree(this.GetX(), (int)(y+speed))
+				&& !isColidding(this.GetX(), (int)(y-speed))) {
+			y-=speed;
+			moved = true;
+		}
+		}else {
+			if(Jogo.rand.nextInt(100) < 10) {
+				if(Player.hasdItem == true) {
+					Player.life -=Jogo.rand.nextInt(2);
+				}else {
+			    Player.life -=Jogo.rand.nextInt(7);
+				}
+			if(Player.life <=0) {
+				
+			}
+			//System.out.println("Vida: " + Player.life);
+			}
+		}
+		
+		if(moved) {
+			frames++;
+			if(frames == maxFrames) {
+				frames = 0;
+				index++;
+				if(index > maxIndex) {
+					index = 0;
+				}
+			}
+		}
+		
+		collidingBullet();
+		
+		if(life <= 0) {
+			destroySelf();
+			return;
+		}
+	}
+	
+	public void destroySelf() {
+		Jogo.entities.remove(this);
+		Jogo.enemies.remove(this);
+	}
+	
+	public void collidingBullet() {
+		for(int i = 0; i < Jogo.bullets.size(); i++) {
+			entidades e = Jogo.bullets.get(i);
+			if(Player.hasItem == true) {
+				maxlife = life;
+				life = lifeControl;
+				life = maxlife;
+			}
+			if(e instanceof Shoot) {
+				if(entidades.isColliding(this, e)) {
+					life--;
+					if(Player.hasItem == true) {
+						life--;
+					}
+					Jogo.bullets.remove(i);
+					return ;
+				}
+				
+			}
+		}
+		
+		
+	}
+	
+	
+	public boolean isColiddingWithPlay() {
+		Rectangle enemyCurrent = new Rectangle(this.GetX()+maskx,this.GetY()+masky,maskw,maskh);
+		Rectangle player = new Rectangle(Jogo.player.GetX(),Jogo.player.GetY(),64,64);
+	
+	
+	    return enemyCurrent.intersects(player);
+	}
+	
+	public boolean isColidding(int xnext, int ynext) {
+		Rectangle enemyCurrent = new Rectangle(xnext + maskx,ynext+masky,maskw,maskh);
+		
+		for(int i = 0; i<Jogo.enemies.size(); i++) {
+			Enemy e = Jogo.enemies.get(i);
+			if(e == this) {
+				continue;
+			}
+			Rectangle targetEnemy = new Rectangle(e.GetX()+ maskx,e.GetY()+masky,maskw,maskh);
+			if(enemyCurrent.intersects(targetEnemy)) {
+				return true;
+			}
+		}
+		
+		
+		
+		return false;
+	}
+	
+	public void render(Graphics g) {
+		g.drawImage(sprites[index],this.GetX() - Camera.x,this.GetY() - Camera.y,null);
+	}
+	
 }
