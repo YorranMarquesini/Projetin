@@ -1,0 +1,12 @@
+package com.projeto.entidades;
+
+import java.awt.image.BufferedImage;
+
+public class Item2 extends entidades {
+
+	public Item2(int x, int y, int altura, int largura, BufferedImage sprite) {
+		super(x, y, altura, largura, sprite);
+		// TODO Auto-generated constructor stub
+	}
+
+}
