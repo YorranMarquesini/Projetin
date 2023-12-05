@@ -1,6 +1,7 @@
 package com.projeto.entidades;
 
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 import com.projeto.main.Jogo;
@@ -11,14 +12,24 @@ public class entidades {
 	public static BufferedImage FISH_EN = Jogo.spritesheet.getSprite(5*64, 0, 64, 64);
 	public static BufferedImage TUBAS_EN = Jogo.spritesheet.getSprite(5*64, 64, 64, 64);
 	public static BufferedImage JELLY_EN = Jogo.spritesheet.getSprite(5*64, 128, 64, 64);
-	
+	public static BufferedImage Life_EN = Jogo.spritesheet.getSprite(0, 448, 64, 64);
+	public static BufferedImage Npc_EN = Jogo.spritesheet.getSprite(64, 448, 64, 64);
+	public static BufferedImage Item_EN = Jogo.spritesheet.getSprite(0, 448+64, 64, 64);
+	public static BufferedImage Item2_EN = Jogo.spritesheet.getSprite(64, 448+64, 64, 64);
+	public static BufferedImage Item3_EN = Jogo.spritesheet.getSprite(128, 448+64, 64, 64);
+	public static BufferedImage Item4_EN = Jogo.spritesheet.getSprite(128+64, 448+64, 64, 64);
 	
 	protected double x;
 	protected double y;
 	protected int altura;
 	protected int largura;
 	
-	private BufferedImage sprite;
+	protected BufferedImage sprite;
+	
+	protected int maskx;
+	protected int masky;
+	protected int mwidth;
+	protected int mheight;
 	
 	public entidades(int x, int y, int altura, int largura, BufferedImage sprite) {
 		this.x = x;
@@ -26,7 +37,19 @@ public class entidades {
 		this.altura = altura;
 		this.largura = largura;
 		this.sprite = sprite;
+		this.maskx = 0;
+		this.masky = 0;
+		this.mwidth = largura;
+		this.mheight = altura;
 	}
+	
+	public void setMask(int maskx, int masky, int mwidth, int mheight) {
+		this.maskx = maskx;
+		this.masky = masky;
+		this.mwidth = mwidth;
+		this.mheight = mheight;
+	}
+	
 	public void setX(int newX) {
 		this.x = newX;
 	}
@@ -50,6 +73,14 @@ public class entidades {
 	public void tick() {
 		
 	}
+	
+	public static boolean isColliding(entidades e1, entidades e2) {
+		Rectangle e1Mask = new Rectangle(e1.GetX() + e1.maskx, e1.GetY() + e1.masky, e1.mwidth, e1.mheight);
+		Rectangle e2Mask = new Rectangle(e2.GetX() + e2.maskx, e2.GetY() + e2.masky, e2.mwidth, e2.mheight);
+		
+		return e1Mask.intersects(e2Mask);
+	}
+	
 	public void render(Graphics g) {
 		g.drawImage(sprite, this.GetX() - Camera.x , this.GetY() - Camera.y, null);
 	}
