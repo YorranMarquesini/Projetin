@@ -13,14 +13,21 @@ public class Player extends entidades {
 	public int right_dir = 0, left_dir = 1;
 	public int up_dir = 2, down_dir = 3;
 	public int dir = right_dir;
-	public double speed = 2;
+	public double speed = 4;
+	public boolean shoot = false,mouseShoot = false;
 	
 	public int frames = 0,maxFrames = 8,index = 0,maxIndex = 4;
-	private boolean moved = false;
+	public boolean moved = false;
 	private BufferedImage[] rightPlayer;
 	private BufferedImage[] leftPlayer;
 	private BufferedImage[] upPlayer;
 	private BufferedImage[] downPlayer;
+	
+	public static double life = 100,maxlife = 100;
+	public static double sanidade = 100,maxsanidade = 100;
+	public int mx,my;
+	public static boolean hasItem = false;
+	public static boolean hasdItem = false;
 	
 	public Player(int x, int y, int altura, int largura, BufferedImage sprite) {
 		super(x, y, altura, largura, sprite);
@@ -44,21 +51,26 @@ public class Player extends entidades {
 	}
 	
 	public void tick() {
+		//game over
+		if (life <=0) {
+			Jogo.gameState = "Game_Over";
+		}
+		// gamer over 
 		moved = false;
-		if(right) {
+		if(right && world.isFree((int)(x+speed),this.GetY())) {
 			moved = true;
 			dir = right_dir;
 			x+=speed;
-		}else if(left) {
+		}else if(left && world.isFree((int)(x-speed),this.GetY())) {
 			moved = true;
 			dir = left_dir;
 			x-=speed;
 		}
-		if (up) {
+		if (up && world.isFree(this.GetX(),(int)(y-speed))) {
 			moved = true;
 			dir = up_dir;
 			y-=speed;
-		}else if(down) {
+		}else if(down && world.isFree(this.GetX(),(int)(y+speed))) {
 			moved = true;
 			dir = down_dir;
 			y+=speed;
@@ -75,8 +87,109 @@ public class Player extends entidades {
 			}
 		}
 		
-		Camera.x = Camera.clamp(this.GetX() - (Jogo.altura/2), 0,world.altura*64 - Jogo.altura);
-		Camera.y = Camera.clamp(this.GetY() - (Jogo.largura/2), 0,world.largura*64 - Jogo.largura);
+		if(shoot) {
+			//criar e atirar balas
+			shoot = false;
+			int dx = 0;
+			int dy = 0;
+			int px = 0;
+			int py = 32;
+			if(dir == right_dir) {
+				px = 20;
+				dx = 1;
+			}else if (dir == left_dir) {
+				px = -1;
+				dx = -1;
+			}else if (dir == down_dir) {
+				px = 10;
+				dy = 1;
+			}else if (dir == up_dir) {
+				px = 10;
+				dy = -1;
+			}
+			
+			Shoot bullet = new Shoot(this.GetX() +px,this.GetY()+py,20,20,null,dx,dy);
+			Jogo.bullets.add(bullet);
+		}
+		
+		if(mouseShoot) {
+			mouseShoot = false;
+			double angle = Math.atan2(my - (this.GetY()+32 - Camera.y), mx - (this.GetX()+32 - Camera.x));
+			
+			double dx = Math.cos(angle);
+			double dy = Math.sin(angle);
+			int px = 32;
+			int py = 32;
+			
+			
+			Shoot bullet = new Shoot(this.GetX() +px,this.GetY()+py,20,20,null,dx,dy);
+			Jogo.bullets.add(bullet);
+		}
+		
+		checkItems();
+		
+		Camera.x = Camera.clamp(this.GetX() - (Jogo.altura/2), 0,world.altura*128 - Jogo.altura);
+		Camera.y = Camera.clamp(this.GetY() - (Jogo.largura/2), 0,world.largura*128 - Jogo.largura);
+	}
+	
+	public void checkItems() {
+		for(int i = 0; i < Jogo.entities.size(); i++) {
+			entidades atual = Jogo.entities.get(i);
+			if(atual instanceof Life) {
+				if(entidades.isColliding(this, atual)) {
+					life+=30;
+					sanidade-=20;
+					if(life > maxlife) {
+						life = maxlife;
+						sanidade +=5;
+					}
+					if(sanidade <= 0) {
+						life-=30;
+						maxsanidade = 0;
+					}
+					Jogo.entities.remove(atual);
+				}
+			}
+		}
+		for(int i = 0; i < Jogo.entities.size(); i++) {
+			entidades atual = Jogo.entities.get(i);
+			if(atual instanceof Item) {
+				if(entidades.isColliding(this, atual)) {
+					hasItem = true;
+					Enemy.lifeControl = 5;
+					Jogo.entities.remove(atual);
+				}
+			}
+		}
+		for(int i = 0; i < Jogo.entities.size(); i++) {
+			entidades atual = Jogo.entities.get(i);
+			if(atual instanceof Item2) {
+				if(entidades.isColliding(this, atual)) {
+					life += 10;
+					maxlife += 10;
+					Jogo.entities.remove(atual);
+				}
+			}
+		}
+		for(int i = 0; i < Jogo.entities.size(); i++) {
+			entidades atual = Jogo.entities.get(i);
+			if(atual instanceof Item3) {
+				if(entidades.isColliding(this, atual)) {
+					sanidade += 10;
+					maxsanidade += 10;
+					Jogo.entities.remove(atual);
+				}
+			}
+		}
+		for(int i = 0; i < Jogo.entities.size(); i++) {
+			entidades atual = Jogo.entities.get(i);
+			if(atual instanceof Item4) {
+				if(entidades.isColliding(this, atual)) {
+					hasdItem = true;
+					Jogo.entities.remove(atual);
+				}
+			}
+		}
 	}
 	
 	public void render(Graphics g) {
