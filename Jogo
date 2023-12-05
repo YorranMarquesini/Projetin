@@ -3,22 +3,31 @@ package com.projeto.main;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.swing.JFrame;
 
+import com.projeto.entidades.Enemy;
 import com.projeto.entidades.Player;
+import com.projeto.entidades.Shoot;
 import com.projeto.entidades.entidades;
 import com.projeto.graficos.Sprite;
+import com.projeto.graficos.UI;
+import com.projeto.world.TreeTile;
 import com.projeto.world.world;
 
-public class Jogo extends Canvas implements Runnable, KeyListener {
+public class Jogo extends Canvas implements Runnable, KeyListener,MouseListener {
 
 	private static final long serialVersionUID = 1L;
 	public static JFrame frame;
@@ -26,30 +35,48 @@ public class Jogo extends Canvas implements Runnable, KeyListener {
 	private boolean isRunning = true;
 	public static final int altura = 640;
 	public static final int largura = 390;
-	public int scala = 2;
+	public static int scala = 2;
 	private BufferedImage image;
+	//game over
+	public static String gameState = "MENU";
 	
 	public static List<entidades> entities;
+	public static List<TreeTile> ctiles;
+	public static List<Enemy> enemies;
+	public static List<Shoot>bullets;
 	public static Sprite spritesheet;
 	
 	public static world world;
 	
 	public static Player player;
 	
+	public static Random rand;
+	
+	public UI ui;
+	
+	public Menu menu;
 	
 	public Jogo() {
+		rand = new Random();
 		addKeyListener(this);
+		addMouseListener(this);
 		frame = new JFrame("Teste");
 		setPreferredSize(new Dimension(altura*scala,largura*scala));
 		initFrame();
 		//iniciando objetos
-		
+		ui = new UI();
 		image = new BufferedImage(altura, largura,BufferedImage.TYPE_INT_RGB);
 		entities = new ArrayList<entidades>();
+		enemies = new ArrayList<Enemy>();
+		bullets = new ArrayList<Shoot>();
+		ctiles = new ArrayList<TreeTile>();
+		
 		spritesheet = new Sprite("/Spritesheet_64_bits.png");
 		player = new Player(0,0,64,64,spritesheet.getSprite(0, 0, 64, 64));
 		entities.add(player);
 		world = new world("/map.png");
+		
+		menu = new Menu();
 	}
 	
 	public void initFrame() {
@@ -78,10 +105,22 @@ public class Jogo extends Canvas implements Runnable, KeyListener {
 	}
 	
 	public void tick() {
+		if (gameState == "NORMAL") {
 		for(int i = 0; i < entities.size(); i++){
 			entidades e = entities.get(i);
 			e.tick();
 		}
+		
+		for(int i = 0; i < bullets.size(); i++) {
+			bullets.get(i).tick();
+		}
+		}else if(gameState == "Game Over") {
+			//game over final
+		}else if(gameState == "MENU") {
+			menu.tick();
+		}
+		
+		
 	}
 	
 	public void render() {
@@ -98,9 +137,27 @@ public class Jogo extends Canvas implements Runnable, KeyListener {
 			entidades e = entities.get(i);
 			e.render(g);
 		}
+		for(int i = 0; i < bullets.size(); i++) {
+			bullets.get(i).render(g);
+		}
+		ui.render(g);
 		g.dispose();
 		g = bs.getDrawGraphics();
 		g.drawImage(image, 0, 0, altura*scala, largura*scala, null);
+		//game over
+		if(gameState == "Game_Over") {
+		  Graphics2D g2 = (Graphics2D) g;
+		  g2.setColor(new Color (0,0,0,100));
+		  g2.fillRect(0, 0, altura*scala, largura*scala);
+		  g.setFont(new Font ("arial", Font.BOLD,28));
+		  g.setColor(Color.WHITE);
+	      g.drawString("Game Over", (altura*scala) / 2, (largura*scala) / 2);
+	    //game over final 
+		}else if(gameState == "MENU") {
+			menu.render(g);
+			
+		}
+		
 		bs.show();
 	}
 	
@@ -111,6 +168,7 @@ public class Jogo extends Canvas implements Runnable, KeyListener {
 		double delta = 0;
 		int frames = 0;
 		double timer = System.currentTimeMillis();
+		requestFocus();
 		while(isRunning) {
 			long now = System.nanoTime();
 			delta+= (now - lastTime)/ ns;
@@ -144,10 +202,26 @@ public class Jogo extends Canvas implements Runnable, KeyListener {
 		
 		if(e.getKeyCode() == KeyEvent.VK_W) {
 			player.up = true;
+			if(gameState == "MENU") {
+				menu.up = true;
+			}
 			
 		}else if(e.getKeyCode() == KeyEvent.VK_S) {
 			player.down = true;
-			
+			if(gameState == "MENU") {
+				menu.down = true;
+			}
+		}
+		if(e.getKeyCode() == KeyEvent.VK_R) {
+			player.shoot = true;
+		}
+		if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+			if(gameState == "MENU") {
+				menu.enter = true;
+			}
+		}
+		if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+			gameState = "MENU";
 		}
 	}
 
@@ -170,6 +244,38 @@ public class Jogo extends Canvas implements Runnable, KeyListener {
 			player.index = 0;
 			
 		}
+		
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		player.mouseShoot = true;
+		player.mx = (e.getX() / 2);
+		player.my = (e.getY() / 2);
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
 		
 	}
 }
