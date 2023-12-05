@@ -1,0 +1,34 @@
+package com.projeto.entidades;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+
+import com.projeto.world.Camera;
+
+public class Shoot extends entidades {
+	
+	private double dx;
+	private double dy;
+	private double spd = 6;
+
+	public Shoot(int x, int y, int altura, int largura, BufferedImage sprite, double dx, double dy) {
+		super(x, y, altura, largura, sprite);
+		this.dx = dx;
+		this.dy = dy;
+	}
+	
+	
+	public void tick() {
+		x+=dx*spd;
+		y+=dy*spd;
+	}
+	
+	
+	public void render(Graphics g) {
+		g.setColor(Color.blue);
+		
+		g.fillOval(this.GetX() - Camera.x, this.GetY() - Camera.y, largura, altura);
+	}
+
+}
