@@ -1,0 +1,28 @@
+package com.projeto.graficos;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import com.projeto.entidades.Player;
+
+public class UI {
+	
+	public void render(Graphics g) {
+		g.setColor(Color.red);
+		g.fillRect(10,10,100,15);
+		g.setColor(Color.green);
+		g.fillRect(10,10,(int)((Player.life/Player.maxlife)*100),15);
+		g.setColor(Color.black);
+		g.fillRect(10,25,80,10);
+		g.setColor(Color.blue);
+		g.fillRect(10,25,(int)((Player.sanidade/Player.maxsanidade)*80),10);
+		g.setColor(Color.white);
+		g.setFont(new Font("arial",Font.BOLD,15));
+		g.drawString((int)Player.life+"/"+(int)Player.maxlife,33, 23);
+		g.setColor(Color.white);
+		g.setFont(new Font("arial",Font.BOLD,10));
+		g.drawString((int)Player.sanidade+"/"+(int)Player.maxsanidade,30, 35);
+		
+		
+}
+}
