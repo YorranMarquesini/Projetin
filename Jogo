@@ -37,6 +37,7 @@ public class Jogo extends Canvas implements Runnable, KeyListener,MouseListener 
 	public static final int largura = 390;
 	public static int scala = 2;
 	private BufferedImage image;
+	public static boolean enter = false;
 	//game over
 	public static String gameState = "MENU";
 	
@@ -114,7 +115,7 @@ public class Jogo extends Canvas implements Runnable, KeyListener,MouseListener 
 		for(int i = 0; i < bullets.size(); i++) {
 			bullets.get(i).tick();
 		}
-		}else if(gameState == "Game Over") {
+		}else if(gameState == "Game_Over") {
 			//game over final
 		}else if(gameState == "MENU") {
 			menu.tick();
@@ -146,12 +147,18 @@ public class Jogo extends Canvas implements Runnable, KeyListener,MouseListener 
 		g.drawImage(image, 0, 0, altura*scala, largura*scala, null);
 		//game over
 		if(gameState == "Game_Over") {
+			enter = false;
 		  Graphics2D g2 = (Graphics2D) g;
 		  g2.setColor(new Color (0,0,0,100));
 		  g2.fillRect(0, 0, altura*scala, largura*scala);
 		  g.setFont(new Font ("arial", Font.BOLD,28));
 		  g.setColor(Color.WHITE);
-	      g.drawString("Game Over", (altura*scala) / 2, (largura*scala) / 2);
+		  g.drawString("Game Over", (altura*scala) / 2, (largura*scala) / 2);
+		  g.drawString("> pressione enter para continuar <", (altura*scala) / 2 - 150, (largura*scala) / 2 + 55);
+	      if(enter == true) {
+	    	  gameState = "MENU";
+	    	  Player.life = Player.maxlife;
+	      }
 	    //game over final 
 		}else if(gameState == "MENU") {
 			menu.render(g);
@@ -218,6 +225,9 @@ public class Jogo extends Canvas implements Runnable, KeyListener,MouseListener 
 		if(e.getKeyCode() == KeyEvent.VK_ENTER) {
 			if(gameState == "MENU") {
 				menu.enter = true;
+			}
+			if(gameState == "Game_Over") {
+				enter = true;
 			}
 		}
 		if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
